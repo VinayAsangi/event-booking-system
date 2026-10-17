@@ -6,11 +6,11 @@ Full-stack seat reservation platform built with **React** (frontend) and **Java 
 
 ## Prerequisites
 
-| Tool | Version |
-|---|---|
-| Java (JDK) | 17+ |
-| Maven | 3.8+ (or use the included `mvnw` wrapper) |
-| Node.js | 18+ |
+| Tool | Version                         |
+|---|---------------------------------|
+| Java (JDK) | 21+                             |
+| Maven | use the included `mvnw` wrapper |
+| Node.js | 18+                             |
 ---
 
 ## Quick Start
@@ -89,24 +89,6 @@ Package root: `com.seatbook`
 | `hooks/useSeats.js` | Data fetching + 5s polling |
 | `hooks/useCountdown.js` | Countdown timer with expire callback |
 | `services/api.js` | Fetch wrappers for all API calls |
-
----
-
-## Assumptions & Design Decisions
-
-1. **No routing library** — page state (seat selection vs. payment) is managed via a single `reservationData` state flag in `App.js`. React Router was omitted to keep the dependency footprint small.
-
-2. **Optimistic-style seat locking on reserve** — the UI transitions immediately to the payment screen after a successful reserve API response. No need for optimistic UI on the grid itself because the user is navigated away.
-
-3. **Polling at 5s** — real-time seat updates (SSE/WebSocket) are replaced with a 5s polling interval on `GET /api/seats`. This keeps the seat grid current in multi-user scenarios and was simpler to implement within the time box. The interval is paused when the user is on the payment screen.
-
-4. **Row pricing** — prices vary by row (A: ₹1200 → E: ₹500) to make the summary more realistic.
-
-5. **Timer safety** — `useCountdown` stores the `onExpire` callback in a ref, so stale closures can't cause double-release bugs.
-
-6. **Backend expiry robustness** — even if the frontend timer fires slightly late, the backend scheduled task independently releases the seat. Both paths call `releaseSeats`, but the service checks `status == RESERVED` before acting, making double-release a no-op.
-
-7. **In-memory storage** — seats and reservations are held in memory (no database currently), so data resets whenever the backend restarts. `SeatStore` is isolated behind its own class so it can later be swapped for a JPA repository.
 
 ---
 
